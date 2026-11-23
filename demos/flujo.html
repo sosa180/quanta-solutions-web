@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Automatización de procesos | Quanta Solutions</title>
+<meta name="description" content="Demo de un flujo automático: lee métricas, calcula el resumen semanal y envía una alerta si el alcance cae más de 20 %.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{--bg:#0A0118;--surface:#160A31;--surface-2:#1D0F3E;--violet:#8B5CF6;--magenta:#EC4899;--cyan:#22D3EE;--amber:#FBBF24;--text:#F5F3FF;--muted:#A79BC7;--border:rgba(139,92,246,0.18);--grad:linear-gradient(115deg,var(--violet) 0%,var(--magenta) 55%,var(--cyan) 100%);--good:#34D399;--bad:#FB7185;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;line-height:1.6;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-bottom:64px;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Space Grotesk',system-ui,sans-serif;font-weight:600;letter-spacing:-0.02em;text-wrap:balance}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+.glow{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(600px 400px at 15% 10%,rgba(139,92,246,0.20),transparent 60%),radial-gradient(700px 500px at 85% 30%,rgba(236,72,153,0.12),transparent 60%),radial-gradient(600px 400px at 50% 95%,rgba(34,211,238,0.08),transparent 60%)}
+.wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:36px 0 0}
+.back{display:inline-block;color:var(--muted);font-size:.92rem;margin-bottom:20px}
+.back:hover{color:var(--text)}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px}
+h1{font-size:clamp(1.9rem,4vw,2.6rem);line-height:1.1;margin-bottom:12px}
+.lede{color:var(--muted);max-width:64ch;margin-bottom:12px}
+.disc{font-size:.85rem;color:var(--muted);border-left:3px solid var(--violet);padding:2px 0 2px 12px;max-width:72ch;margin-bottom:26px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;min-width:0}
+.panel h2{font-size:1.1rem;margin-bottom:4px}
+.sub{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--text);font-weight:600;font-size:.92rem;cursor:pointer;transition:transform .15s ease,border-color .15s ease}
+.btn:hover{border-color:var(--violet);transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.btn-primary{background:var(--grad);color:#0A0118;border-color:transparent;box-shadow:0 8px 26px rgba(139,92,246,0.3)}
+.btn-primary:hover{border-color:transparent}
+.btn[aria-pressed="true"]{background:var(--violet);border-color:var(--violet)}
+.btn-sm{padding:6px 12px;font-size:.82rem}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.field{display:grid;gap:4px;min-width:0;max-width:100%}
+.field input[type=file]{max-width:100%;min-width:0}
+.field label,.lbl{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+input[type=text],input[type=search],input[type=number],select,textarea{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;min-width:0;max-width:100%}
+select option{background:var(--surface)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.grid-eq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:860px){.grid2,.grid-eq{grid-template-columns:minmax(0,1fr)}}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{font-family:'JetBrains Mono',monospace;font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;font-weight:500;padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace}
+tr:last-child td{border-bottom:0}
+pre.code{margin:0;background:#07000F;color:#D9D2F5;border:1px solid var(--border);border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.6;padding:14px;overflow:auto;max-height:340px;white-space:pre}
+.pill{font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:3px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.good{color:var(--good)}.pill.bad{color:var(--bad)}.pill.warn{color:var(--amber)}.pill.info{color:var(--cyan)}
+.note{font-size:.82rem;color:var(--muted);margin-top:28px;padding-top:14px;border-top:1px solid var(--border);max-width:76ch}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) minmax(0,1.15fr);gap:34px;align-items:stretch}
+@media(max-width:900px){.flow{grid-template-columns:minmax(0,1fr);gap:30px}}
+.node{position:relative;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;cursor:pointer;display:grid;gap:4px;align-content:start;min-width:0}
+.node:hover{border-color:var(--violet)}
+.node .kind{font-family:'JetBrains Mono',monospace;font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.node .nm{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.98rem;line-height:1.25}
+.node .ds{font-size:.8rem;color:var(--muted)}
+.node .st{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted);min-height:16px}
+.node.sel{border-color:var(--text)}
+.node.active{border-color:var(--magenta);background:var(--surface-2)}
+.node.done .st{color:var(--good)}
+.node.skip{opacity:.5}
+.flow>.node::after{content:"→";position:absolute;right:-26px;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono',monospace;color:var(--muted)}
+@media(max-width:900px){.flow>.node::after{right:auto;left:50%;top:auto;bottom:-27px;transform:translateX(-50%);content:"↓"}}
+.branch{display:grid;gap:12px;align-content:stretch}
+.tag{font-family:'JetBrains Mono',monospace;font-size:.66rem;padding:1px 7px;border-radius:4px;border:1px solid currentColor;width:max-content}
+.tag.si{color:var(--bad)}.tag.no{color:var(--good)}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="wrap">
+<a class="back" href="./">&larr; Todas las demos</a>
+
+<div class="eyebrow">Demo · Automatización de procesos</div>
+<h1>Reporte semanal con alerta automática</h1>
+<p class="lede">Cada lunes a las 7:00 el flujo lee las métricas, calcula el resumen y lo compara con la semana anterior. Si el alcance cae más de 20 %, envía una alerta; si no, el resumen normal.</p>
+<p class="disc">Es una simulación: no envía correos reales. El código que ves es el mismo que se ejecuta aquí y el que se exporta a n8n.</p>
+<div class="row" style="margin-bottom:16px">
+  <span class="lbl">Escenario</span>
+  <button class="btn btn-sm" id="sc-ok" aria-pressed="false">Alcance estable</button>
+  <button class="btn btn-sm" id="sc-drop" aria-pressed="true">Alcance cae 28 %</button>
+  <button class="btn btn-primary btn-sm" id="run">Ejecutar flujo</button>
+</div>
+<div class="flow" id="flow"></div>
+<div class="grid-eq" style="margin-top:18px">
+  <div class="panel"><h2 id="out-title">Salida del nodo</h2><p class="sub">Toca un nodo para ver lo que entrega.</p><pre class="code" id="out" tabindex="0" aria-live="polite"></pre></div>
+  <div class="panel"><h2>Código del nodo de cálculo</h2><p class="sub">JavaScript, el lenguaje de los nodos Code de n8n.</p><pre class="code" id="codeview" tabindex="0"></pre></div>
+</div>
+<div class="panel" style="margin-top:16px">
+  <div class="row" style="justify-content:space-between"><h2>Flujo importable en n8n</h2><button class="btn btn-sm" id="copy">Copiar JSON</button></div>
+  <p class="sub">Copia, abre un flujo vacío en n8n y pega con Ctrl+V. Falta elegir tu hoja y conectar tus credenciales de Google y de correo. No fue probado en una instalación real de n8n.</p>
+  <pre class="code" id="json" tabindex="0"></pre>
+</div>
+<p class="note">La misma lógica se puede construir en Power Automate, Make o Python, según las herramientas que ya use tu empresa.</p>
+
+</div>
+<script>
+
+(function(){
+var $=function(id){return document.getElementById(id);};
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+var END=Date.UTC(2026,10,21), DAY=86400000;
+function dstr(ms){return new Date(ms).toISOString().slice(0,10);}
+function resumen(rows) {
+  const filas = rows.slice().sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const suma = (arr, k) => arr.reduce((t, r) => t + Number(r[k]), 0);
+  const ultima = filas.slice(-7);
+  const previa = filas.slice(-14, -7);
+  const alcance = suma(ultima, 'alcance');
+  const alcancePrevio = suma(previa, 'alcance');
+  const variacion = Math.round((alcance - alcancePrevio) / alcancePrevio * 1000) / 10;
+  const engagement = Math.round(suma(ultima, 'interacciones') / alcance * 10000) / 100;
+  const fmt = (n) => n.toLocaleString('es-CO');
+  const signo = variacion > 0 ? '+' : '';
+  return {
+    periodo: ultima[0].fecha + ' a ' + ultima[ultima.length - 1].fecha,
+    alcance_7d: alcance,
+    alcance_previo: alcancePrevio,
+    variacion_alcance: variacion,
+    engagement_pct: engagement,
+    seguidores_nuevos: suma(ultima, 'seguidores_nuevos'),
+    asunto: 'Alcance ' + signo + variacion.toLocaleString('es-CO') + '% vs semana anterior',
+    cuerpo: 'Alcance de los últimos 7 días: ' + fmt(alcance) + ' (semana previa: ' + fmt(alcancePrevio) + '). Engagement: ' + engagement.toLocaleString('es-CO') + '%.'
+  };
+}
+var JS_CODE="const rows = $input.all().map(i => i.json);\n\n"+resumen.toString()+"\n\nreturn [{ json: resumen(rows) }];";
+var UMBRAL=-20;
+function sheetRows(drop){
+  var r=rng(drop?77:78), rows=[];
+  for(var i=0;i<14;i++){
+    var reach=Math.round(5200*(.92+.16*r())*(i>=7?(drop?.72:1.02):1));
+    rows.push({fecha:dstr(END-(13-i)*DAY),red:'Instagram',alcance:reach,interacciones:Math.round(reach*.058*(.9+.2*r())),seguidores_nuevos:Math.round(reach*.004*(.6+.8*r()))});
+  }
+  return rows;
+}
+var NODES=[
+ {id:'trigger',kind:'Programador',nm:'Cada lunes 7:00',ds:'Dispara el flujo una vez por semana.'},
+ {id:'sheets',kind:'Google Sheets',nm:'Leer métricas',ds:'Trae las filas diarias de la hoja "metricas".'},
+ {id:'code',kind:'Code · JavaScript',nm:'Calcular resumen',ds:'Suma 7 días y compara con la semana previa.'},
+ {id:'if',kind:'IF',nm:'¿Cayó el alcance más de 20 %?',ds:'Decide qué mensaje enviar.'}
+];
+var BRANCH=[
+ {id:'alert',tag:'Sí',cls:'si',kind:'Correo',nm:'Enviar alerta',ds:'Asunto con prefijo ALERTA y el detalle.'},
+ {id:'weekly',tag:'No',cls:'no',kind:'Correo',nm:'Enviar resumen semanal',ds:'Resumen normal para el equipo.'}
+];
+function workflowJSON(){
+  var mail=function(name,subject,pos){return {parameters:{fromEmail:'reportes@tu-dominio.com',toEmail:'equipo@tu-dominio.com',subject:subject,emailFormat:'text',text:'={{ $json.cuerpo }}',options:{}},name:name,type:'n8n-nodes-base.emailSend',typeVersion:2.1,position:pos,credentials:{smtp:{id:'',name:'SMTP'}}};};
+  return {name:'Reporte semanal de métricas con alerta',nodes:[
+    {parameters:{rule:{interval:[{field:'weeks',triggerAtDay:[1],triggerAtHour:7}]}},name:'Cada lunes 7:00',type:'n8n-nodes-base.scheduleTrigger',typeVersion:1.2,position:[0,0]},
+    {parameters:{documentId:{__rl:true,mode:'id',value:'ID_DE_TU_HOJA'},sheetName:{__rl:true,mode:'name',value:'metricas'},options:{}},name:'Leer métricas',type:'n8n-nodes-base.googleSheets',typeVersion:4.5,position:[240,0],credentials:{googleSheetsOAuth2Api:{id:'',name:'Google Sheets'}}},
+    {parameters:{jsCode:JS_CODE},name:'Calcular resumen',type:'n8n-nodes-base.code',typeVersion:2,position:[480,0]},
+    {parameters:{conditions:{options:{caseSensitive:true,leftValue:'',typeValidation:'strict'},conditions:[{id:'umbral',leftValue:'={{ $json.variacion_alcance }}',rightValue:UMBRAL,operator:{type:'number',operation:'lt'}}],combinator:'and'},options:{}},name:'¿Cayó el alcance?',type:'n8n-nodes-base.if',typeVersion:2,position:[720,0]},
+    mail('Enviar alerta',"={{ 'ALERTA · ' + $json.asunto }}",[960,-100]),
+    mail('Enviar resumen semanal','={{ $json.asunto }}',[960,100])],
+    connections:{'Cada lunes 7:00':{main:[[{node:'Leer métricas',type:'main',index:0}]]},'Leer métricas':{main:[[{node:'Calcular resumen',type:'main',index:0}]]},'Calcular resumen':{main:[[{node:'¿Cayó el alcance?',type:'main',index:0}]]},'¿Cayó el alcance?':{main:[[{node:'Enviar alerta',type:'main',index:0}],[{node:'Enviar resumen semanal',type:'main',index:0}]]}},
+    settings:{executionOrder:'v1'}};
+}
+var els={},outputs={},selected='code',drop=true,running=false;
+function nodeBtn(n){
+  var b=document.createElement('button');b.className='node';b.type='button';b.dataset.id=n.id;
+  b.innerHTML=(n.tag?'<span class="tag '+n.cls+'">'+n.tag+'</span>':'')+'<span class="kind">'+n.kind+'</span><span class="nm">'+n.nm+'</span><span class="ds">'+n.ds+'</span><span class="st"></span>';
+  b.addEventListener('click',function(){selected=n.id;showOut();markSel();});els[n.id]=b;return b;
+}
+function build(){
+  var f=$('flow');NODES.forEach(function(n){f.appendChild(nodeBtn(n));});
+  var br=document.createElement('div');br.className='branch';BRANCH.forEach(function(n){br.appendChild(nodeBtn(n));});f.appendChild(br);
+}
+function setState(id,cls,t){var e=els[id];e.classList.remove('active','done','skip');if(cls)e.classList.add(cls);e.querySelector('.st').textContent=t||'';}
+function markSel(){Object.keys(els).forEach(function(k){els[k].classList.toggle('sel',k===selected);});}
+function showOut(){
+  var all=NODES.concat(BRANCH),n=all.filter(function(x){return x.id===selected;})[0];
+  $('out-title').textContent='Salida: '+n.nm;
+  $('out').textContent=outputs[selected]!==undefined?JSON.stringify(outputs[selected],null,2):'Este nodo no se ejecutó en este escenario.';
+}
+function compute(){
+  var rows=sheetRows(drop),res=resumen(rows),hit=res.variacion_alcance<UMBRAL;
+  outputs={trigger:{timestamp:'2026-11-23T07:00:00-05:00',modo:'programado'},sheets:{filas:rows.length,primeras_filas:rows.slice(0,2),'…':'12 filas más'},code:res,'if':{condicion:'variacion_alcance < '+UMBRAL,valor:res.variacion_alcance,resultado:hit,sale_por:hit?'Sí':'No'}};
+  outputs[hit?'alert':'weekly']={para:'equipo@tu-dominio.com',asunto:hit?'ALERTA · '+res.asunto:res.asunto,cuerpo:res.cuerpo,estado:'simulado, no se envió nada'};
+  return {hit:hit};
+}
+function runFlow(instant){
+  if(running)return;running=true;
+  var info=compute(),seq=['trigger','sheets','code','if',info.hit?'alert':'weekly'],skip=info.hit?'weekly':'alert';
+  Object.keys(els).forEach(function(k){setState(k,null,'');});
+  var wait=(instant||window.matchMedia('(prefers-reduced-motion: reduce)').matches)?0:520,i=0;
+  function step(){
+    if(i>0)setState(seq[i-1],'done','ejecutado');
+    if(i===seq.length){setState(skip,'skip','no ejecutado');running=false;showOut();return;}
+    setState(seq[i],'active','ejecutando…');selected=seq[i];markSel();showOut();i++;
+    wait?setTimeout(step,wait):step();
+  }
+  step();
+  if(!wait){selected='code';markSel();showOut();}
+}
+function setScenario(d){if(running)return;drop=d;$('sc-ok').setAttribute('aria-pressed',String(!d));$('sc-drop').setAttribute('aria-pressed',String(d));runFlow(false);}
+$('copy').addEventListener('click',function(){
+  var el=$('json'),b=$('copy');
+  var ok=function(){b.textContent='Copiado';setTimeout(function(){b.textContent='Copiar JSON';},1600);};
+  var fb=function(){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selecciona y copia (Ctrl+C)';};
+  try{navigator.clipboard.writeText(el.textContent).then(ok,fb);}catch(e){fb();}
+});
+build();
+$('codeview').textContent=JS_CODE;
+$('json').textContent=JSON.stringify(workflowJSON(),null,2);
+$('sc-ok').addEventListener('click',function(){setScenario(false);});
+$('sc-drop').addEventListener('click',function(){setScenario(true);});
+$('run').addEventListener('click',function(){runFlow(false);});
+runFlow(true);
+})();
+
+</script>
+</body>
+</html>

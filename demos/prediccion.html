@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Predicción de demanda | Quanta Solutions</title>
+<meta name="description" content="Demo de predicción de ventas: pronóstico por producto con rango probable, error medido y pedido sugerido.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0A0118;--surface:#160A31;--surface-2:#1D0F3E;--violet:#8B5CF6;--magenta:#EC4899;--cyan:#22D3EE;--amber:#FBBF24;--text:#F5F3FF;--muted:#A79BC7;--border:rgba(139,92,246,0.18);--grad:linear-gradient(115deg,var(--violet) 0%,var(--magenta) 55%,var(--cyan) 100%);--good:#34D399;--bad:#FB7185;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;line-height:1.6;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-bottom:64px;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Space Grotesk',system-ui,sans-serif;font-weight:600;letter-spacing:-0.02em;text-wrap:balance}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+.glow{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(600px 400px at 15% 10%,rgba(139,92,246,0.20),transparent 60%),radial-gradient(700px 500px at 85% 30%,rgba(236,72,153,0.12),transparent 60%),radial-gradient(600px 400px at 50% 95%,rgba(34,211,238,0.08),transparent 60%)}
+.wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:36px 0 0}
+.back{display:inline-block;color:var(--muted);font-size:.92rem;margin-bottom:20px}
+.back:hover{color:var(--text)}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px}
+h1{font-size:clamp(1.9rem,4vw,2.6rem);line-height:1.1;margin-bottom:12px}
+.lede{color:var(--muted);max-width:64ch;margin-bottom:12px}
+.disc{font-size:.85rem;color:var(--muted);border-left:3px solid var(--violet);padding:2px 0 2px 12px;max-width:72ch;margin-bottom:26px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;min-width:0}
+.panel h2{font-size:1.1rem;margin-bottom:4px}
+.sub{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--text);font-weight:600;font-size:.92rem;cursor:pointer;transition:transform .15s ease,border-color .15s ease}
+.btn:hover{border-color:var(--violet);transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.btn-primary{background:var(--grad);color:#0A0118;border-color:transparent;box-shadow:0 8px 26px rgba(139,92,246,0.3)}
+.btn-primary:hover{border-color:transparent}
+.btn[aria-pressed="true"]{background:var(--violet);border-color:var(--violet)}
+.btn-sm{padding:6px 12px;font-size:.82rem}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.field{display:grid;gap:4px;min-width:0;max-width:100%}
+.field input[type=file]{max-width:100%;min-width:0}
+.field label,.lbl{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+input[type=text],input[type=search],input[type=number],select,textarea{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;min-width:0;max-width:100%}
+select option{background:var(--surface)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.grid-eq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:860px){.grid2,.grid-eq{grid-template-columns:minmax(0,1fr)}}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{font-family:'JetBrains Mono',monospace;font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;font-weight:500;padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace}
+tr:last-child td{border-bottom:0}
+pre.code{margin:0;background:#07000F;color:#D9D2F5;border:1px solid var(--border);border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.6;padding:14px;overflow:auto;max-height:340px;white-space:pre}
+.pill{font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:3px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.good{color:var(--good)}.pill.bad{color:var(--bad)}.pill.warn{color:var(--amber)}.pill.info{color:var(--cyan)}
+.note{font-size:.82rem;color:var(--muted);margin-top:28px;padding-top:14px;border-top:1px solid var(--border);max-width:76ch}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px;display:grid;gap:4px;min-width:0}
+.kpi .k{font-size:.82rem;color:var(--muted)}
+.kpi .v{font-family:'Space Grotesk',sans-serif;font-size:1.7rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.15}
+.kpi .s{font-size:.78rem;color:var(--muted)}
+#advice p{margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="wrap">
+<a class="back" href="./">&larr; Todas las demos</a>
+
+<div class="eyebrow">Demo · Inteligencia artificial aplicada</div>
+<h1>Predicción de demanda</h1>
+<p class="lede">Elige un producto y cuántos meses quieres mirar hacia adelante. El modelo calcula cuánto se venderá, el rango probable y cuánto conviene pedir. También puedes subir tus propias ventas mensuales.</p>
+<p class="disc">Es un modelo estadístico (tendencia más estacionalidad), no una promesa de acierto. La demo mide su error con los últimos 6 meses y lo compara con una regla simple: repetir el mismo mes del año anterior. Los datos de ejemplo son ficticios.</p>
+<div class="panel" style="margin-bottom:16px">
+  <div class="row">
+    <div class="field"><label for="prod">Producto</label><select id="prod"></select></div>
+    <div class="field"><span class="lbl">Meses a pronosticar</span><span class="row" id="hz" style="gap:6px"></span></div>
+    <div class="field"><label for="file">Tus datos (CSV: fecha, unidades)</label><input type="file" id="file" accept=".csv,.txt"></div>
+  </div>
+  <div id="status" class="sub" style="margin:10px 0 0"></div>
+</div>
+<div class="kpis" id="kpis"></div>
+<div class="panel" style="margin-top:16px">
+  <h2>Ventas mensuales y pronóstico</h2><p class="sub" id="chart-sub"></p>
+  <div style="position:relative;height:320px"><canvas id="chart" role="img" aria-label="Ventas mensuales históricas y pronóstico con rango probable"></canvas></div>
+</div>
+<div class="panel" style="margin-top:16px"><h2>Qué hacer con esto</h2><div id="advice" style="font-size:.95rem"></div></div>
+<p class="note">Para producción se agregan más variables (promociones, precios, clima, festivos), se prueba el modelo con más historia y se vuelve a calcular cada mes de forma automática.</p>
+
+</div>
+<script>
+
+(function(){
+var $=function(id){return document.getElementById(id);};
+var nf=function(n,d){return Number(n).toLocaleString('es-CO',{maximumFractionDigits:d||0,minimumFractionDigits:d||0});};
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+var MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+var START={y:2023,m:10}; /* nov 2023; la serie termina en oct 2026 */
+function lab(y,m){return MES[m]+' '+String(y).slice(2);}
+function addM(y,m,k){var t=y*12+m+k;return [Math.floor(t/12),t%12];}
+var DEF={
+ 'Café molido':{base:900,tr:.008,seas:[.9,.88,.92,.95,1,1.02,.98,.97,1,1.05,1.18,1.3],seed:3},
+ 'Grano entero':{base:500,tr:.005,seas:[.95,.92,.95,.98,1,1.02,1,1,1,1.03,1.1,1.2],seed:8},
+ 'Cápsulas':{base:400,tr:.015,seas:[.92,.9,.95,.97,1,1.03,1,.98,1,1.04,1.15,1.25],seed:12},
+ 'Accesorios':{base:150,tr:.003,seas:[.7,.75,.8,.85,.95,.9,.85,.85,.9,1,1.4,2.05],seed:21}
+};
+var SETS={};
+Object.keys(DEF).forEach(function(k){
+  var c=DEF[k],r=rng(c.seed),vals=[];
+  for(var t=0;t<36;t++){var m=(START.m+t)%12;vals.push(Math.round(c.base*(1+c.tr*t)*c.seas[m]*(.93+.14*r())));}
+  SETS[k]={vals:vals,y:START.y,m:START.m};
+});
+var cur='Café molido',H=6,chart=null;
+
+function fit(y,startMonth){
+  var n=y.length,sx=0,sy=0,sxx=0,sxy=0;
+  for(var t=0;t<n;t++){sx+=t;sy+=y[t];sxx+=t*t;sxy+=t*y[t];}
+  var b=(n*sxy-sx*sy)/(n*sxx-sx*sx),a=(sy-b*sx)/n;
+  var sum=new Array(12).fill(0),cnt=new Array(12).fill(0);
+  for(t=0;t<n;t++){var tr=a+b*t;if(tr>0){var m=(startMonth+t)%12;sum[m]+=y[t]/tr;cnt[m]++;}}
+  var idx=sum.map(function(s,i){return cnt[i]?s/cnt[i]:1;}),mean=idx.reduce(function(p,q){return p+q;},0)/12;
+  idx=idx.map(function(v){return v/mean;});
+  var res=[];for(t=0;t<n;t++){var f=(a+b*t)*idx[(startMonth+t)%12];if(f>0)res.push(y[t]/f-1);}
+  var mu=res.reduce(function(p,q){return p+q;},0)/res.length,sd=Math.sqrt(res.reduce(function(p,q){return p+(q-mu)*(q-mu);},0)/res.length);
+  return {a:a,b:b,idx:idx,sd:sd,n:n,sm:startMonth};
+}
+function predict(M,h){var t=M.n+h-1,f=(M.a+M.b*t)*M.idx[(M.sm+t)%12];return Math.max(0,f);}
+function mape(act,pred){var s=0,k=0;for(var i=0;i<act.length;i++){if(act[i]>0){s+=Math.abs(act[i]-pred[i])/act[i];k++;}}return k?s/k*100:NaN;}
+
+function render(){
+  var S=SETS[cur],y=S.vals,n=y.length;
+  var M=fit(y,S.m),z=1.2816;
+  var fc=[],lo=[],hi=[];
+  for(var h=1;h<=H;h++){var f=predict(M,h);fc.push(f);hi.push(f*(1+z*M.sd));lo.push(Math.max(0,f*(1-z*M.sd)));}
+  /* backtest: últimos 6 meses */
+  var test=y.slice(n-6),Mt=fit(y.slice(0,n-6),S.m),pm=[],pn=[];
+  for(var i=1;i<=6;i++){pm.push(predict(Mt,i));pn.push(y[n-6-12+i-1]!==undefined?y[n-6-12+i-1]:NaN);}
+  var e1=mape(test,pm),e2=mape(test,pn);
+  var tot=fc.reduce(function(p,q){return p+q;},0),totHi=hi.reduce(function(p,q){return p+q;},0);
+  var better=!isNaN(e2)&&e1<e2;
+  $('kpis').innerHTML=
+   '<div class="kpi"><div class="k">Ventas esperadas, próximos '+H+' meses</div><div class="v">'+nf(tot)+' u.</div><div class="s">≈ '+nf(tot/H)+' unidades por mes</div></div>'+
+   '<div class="kpi"><div class="k">Pedido sugerido (cubre el 80 % de los casos)</div><div class="v">'+nf(totHi)+' u.</div><div class="s">+'+nf(totHi-tot)+' de colchón sobre lo esperado</div></div>'+
+   '<div class="kpi"><div class="k">Error del modelo (últimos 6 meses)</div><div class="v">'+nf(e1,1)+' %</div><div class="s">'+(isNaN(e2)?'Sin referencia de comparación':'Repetir el año anterior: '+nf(e2,1)+' %')+'</div></div>';
+  $('chart-sub').textContent=cur+' · '+n+' meses de historia, '+lab(S.y,S.m)+' a '+lab.apply(null,addM(S.y,S.m,n-1))+'. La banda es el rango probable (80 %).';
+  var ad='<p>Para los próximos '+H+' meses se esperan unas <b>'+nf(tot)+' unidades</b>. Para que no falte producto en el 80 % de los escenarios, ten disponibles unas <b>'+nf(totHi)+'</b>.</p>';
+  ad+='<p>'+(better?'En la prueba con los últimos 6 meses el modelo se equivocó menos que repetir el año anterior ('+nf(e1,1)+' % contra '+nf(e2,1)+' %), así que aporta algo útil.':'En la prueba con los últimos 6 meses el modelo no mejoró a la regla simple de repetir el año anterior'+(isNaN(e2)?'':' ('+nf(e1,1)+' % contra '+nf(e2,1)+' %)')+'. Con estos datos conviene usar el pronóstico solo como referencia.')+'</p>';
+  if(n<36)ad+='<p>Tienes '+n+' meses de historia. Con menos de 3 años, la estacionalidad se estima con pocos datos y el rango se vuelve menos fiable.</p>';
+  $('advice').innerHTML=ad;
+  draw(S,y,fc,lo,hi);
+}
+function draw(S,y,fc,lo,hi){
+  if(typeof Chart==='undefined'){$('chart-sub').textContent+=' (No se pudo cargar la librería de gráficas: revisa tu conexión.)';return;}
+  var n=y.length,labels=[],i;
+  for(i=0;i<n+H;i++){var ym=addM(S.y,S.m,i);labels.push(lab(ym[0],ym[1]));}
+  var pad=function(arr,fillLast){var o=new Array(n-1).fill(null);o.push(fillLast);return o.concat(arr);};
+  var last=y[n-1];
+  var hist=y.concat(new Array(H).fill(null));
+  var ds=[
+   {label:'Ventas reales',data:hist,borderColor:'#22D3EE',backgroundColor:'#22D3EE',borderWidth:2.4,pointRadius:0,tension:.25},
+   {label:'Pronóstico',data:pad(fc,last),borderColor:'#EC4899',borderDash:[6,4],borderWidth:2.4,pointRadius:0,tension:.25},
+   {label:'sup',data:pad(hi,last),borderColor:'rgba(0,0,0,0)',pointRadius:0,borderWidth:0,tension:.25},
+   {label:'Rango probable (80 %)',data:pad(lo,last),borderColor:'rgba(0,0,0,0)',backgroundColor:'rgba(139,92,246,.28)',fill:'-1',pointRadius:0,borderWidth:0,tension:.25}
+  ];
+  Chart.defaults.font.family="'Inter',sans-serif";Chart.defaults.color='#A79BC7';
+  if(chart)chart.destroy();
+  chart=new Chart($('chart'),{type:'line',data:{labels:labels,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+   plugins:{legend:{position:'bottom',labels:{color:'#A79BC7',boxWidth:14,boxHeight:3,filter:function(it){return it.text!=='sup';}}},tooltip:{filter:function(it){return it.dataset.label!=='sup'&&it.parsed.y!==null;},callbacks:{label:function(c){return c.dataset.label+': '+nf(c.parsed.y);}}}},
+   scales:{x:{grid:{display:false},ticks:{color:'#A79BC7',maxTicksLimit:10,maxRotation:0}},y:{beginAtZero:true,grid:{color:'rgba(139,92,246,.15)'},border:{display:false},ticks:{color:'#A79BC7',callback:function(v){return nf(v);}}}}}});
+}
+function status(t,err){var s=$('status');s.textContent=t;s.style.color=err?'#FB7185':'';}
+function build(){
+  $('prod').innerHTML=Object.keys(SETS).map(function(k){return '<option>'+k+'</option>';}).join('');
+  $('prod').value=cur;
+  $('hz').innerHTML='';[3,6,12].forEach(function(h){var b=document.createElement('button');b.className='btn btn-sm';b.textContent=h+' meses';b.dataset.h=h;b.addEventListener('click',function(){H=h;sync();render();});$('hz').appendChild(b);});
+  sync();
+}
+function sync(){document.querySelectorAll('#hz .btn').forEach(function(b){b.setAttribute('aria-pressed',String(+b.dataset.h===H));});}
+$('prod').addEventListener('change',function(e){cur=e.target.value;render();});
+function parseCSV(text,name){
+  var lines=text.split(/\r?\n/).filter(function(l){return l.trim();}),by={};
+  lines.forEach(function(l){
+    var p=l.split(/[;,\t]/);if(p.length<2)return;
+    var d=p[0].trim(),m=d.match(/^(\d{4})-(\d{1,2})/),y,mo;
+    if(m){y=+m[1];mo=+m[2]-1;}else{m=d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(!m)return;y=+m[3];mo=+m[2]-1;}
+    var v=parseFloat(p[1].trim().replace(/\./g,'').replace(',','.'));if(isNaN(v)){v=parseFloat(p[1]);}if(isNaN(v))return;
+    var k=y*12+mo;by[k]=(by[k]||0)+v;
+  });
+  var ks=Object.keys(by).map(Number).sort(function(a,b){return a-b;});
+  if(ks.length<24)return {err:'Necesito al menos 24 meses de datos y encontré '+ks.length+'. Usa filas como 2025-03-01, 120.'};
+  for(var i=1;i<ks.length;i++)if(ks[i]!==ks[i-1]+1)return {err:'Faltan meses entre los datos (por ejemplo después de '+lab(Math.floor(ks[i-1]/12),ks[i-1]%12)+'). Completa los meses sin ventas con 0.'};
+  return {set:{vals:ks.map(function(k){return by[k];}),y:Math.floor(ks[0]/12),m:ks[0]%12}};
+}
+$('file').addEventListener('change',function(e){
+  var f=e.target.files[0];if(!f)return;var fr=new FileReader();
+  fr.onload=function(){var r=parseCSV(String(fr.result),f.name);
+    if(r.err){status(r.err,true);return;}
+    var nm='Tus datos ('+f.name+')';SETS[nm]=r.set;cur=nm;build();status(f.name+': '+r.set.vals.length+' meses leídos. Se procesan en tu navegador y no se envían a ningún servidor.');render();};
+  fr.onerror=function(){status('No se pudo leer el archivo.',true);};fr.readAsText(f);
+});
+build();status('Datos de ejemplo de una tienda ficticia. Sube tu archivo para usar tus ventas.');render();
+})();
+
+</script>
+</body>
+</html>

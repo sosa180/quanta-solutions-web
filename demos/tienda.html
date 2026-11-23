@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tienda online | Quanta Solutions</title>
+<meta name="description" content="Demo de tienda online: catálogo, carrito, cupón, envío y pedido listo para enviar por WhatsApp.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{--bg:#0A0118;--surface:#160A31;--surface-2:#1D0F3E;--violet:#8B5CF6;--magenta:#EC4899;--cyan:#22D3EE;--amber:#FBBF24;--text:#F5F3FF;--muted:#A79BC7;--border:rgba(139,92,246,0.18);--grad:linear-gradient(115deg,var(--violet) 0%,var(--magenta) 55%,var(--cyan) 100%);--good:#34D399;--bad:#FB7185;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;line-height:1.6;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-bottom:64px;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Space Grotesk',system-ui,sans-serif;font-weight:600;letter-spacing:-0.02em;text-wrap:balance}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+.glow{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(600px 400px at 15% 10%,rgba(139,92,246,0.20),transparent 60%),radial-gradient(700px 500px at 85% 30%,rgba(236,72,153,0.12),transparent 60%),radial-gradient(600px 400px at 50% 95%,rgba(34,211,238,0.08),transparent 60%)}
+.wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:36px 0 0}
+.back{display:inline-block;color:var(--muted);font-size:.92rem;margin-bottom:20px}
+.back:hover{color:var(--text)}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px}
+h1{font-size:clamp(1.9rem,4vw,2.6rem);line-height:1.1;margin-bottom:12px}
+.lede{color:var(--muted);max-width:64ch;margin-bottom:12px}
+.disc{font-size:.85rem;color:var(--muted);border-left:3px solid var(--violet);padding:2px 0 2px 12px;max-width:72ch;margin-bottom:26px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;min-width:0}
+.panel h2{font-size:1.1rem;margin-bottom:4px}
+.sub{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--text);font-weight:600;font-size:.92rem;cursor:pointer;transition:transform .15s ease,border-color .15s ease}
+.btn:hover{border-color:var(--violet);transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.btn-primary{background:var(--grad);color:#0A0118;border-color:transparent;box-shadow:0 8px 26px rgba(139,92,246,0.3)}
+.btn-primary:hover{border-color:transparent}
+.btn[aria-pressed="true"]{background:var(--violet);border-color:var(--violet)}
+.btn-sm{padding:6px 12px;font-size:.82rem}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.field{display:grid;gap:4px;min-width:0;max-width:100%}
+.field input[type=file]{max-width:100%;min-width:0}
+.field label,.lbl{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+input[type=text],input[type=search],input[type=number],select,textarea{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;min-width:0;max-width:100%}
+select option{background:var(--surface)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.grid-eq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:860px){.grid2,.grid-eq{grid-template-columns:minmax(0,1fr)}}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{font-family:'JetBrains Mono',monospace;font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;font-weight:500;padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace}
+tr:last-child td{border-bottom:0}
+pre.code{margin:0;background:#07000F;color:#D9D2F5;border:1px solid var(--border);border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.6;padding:14px;overflow:auto;max-height:340px;white-space:pre}
+.pill{font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:3px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.good{color:var(--good)}.pill.bad{color:var(--bad)}.pill.warn{color:var(--amber)}.pill.info{color:var(--cyan)}
+.note{font-size:.82rem;color:var(--muted);margin-top:28px;padding-top:14px;border-top:1px solid var(--border);max-width:76ch}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.prod{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;display:grid;gap:8px;align-content:start;transition:border-color .2s}
+.prod:hover{border-color:var(--violet)}
+.thumb{height:84px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;background:linear-gradient(135deg,rgba(139,92,246,.25),rgba(236,72,153,.18))}
+.prod h3{font-size:.98rem}.prod p{font-size:.82rem;color:var(--muted)}
+.price{font-family:'JetBrains Mono',monospace;font-weight:500}
+.cart{position:sticky;top:12px}
+@media(max-width:860px){.cart{position:static}}
+.prog{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden;margin-bottom:12px}
+.prog div{height:100%;width:0;background:var(--grad);transition:width .3s}
+.line{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.9rem}
+.line .qty{display:flex;align-items:center;gap:6px;margin-top:4px}
+.qbtn{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:transparent;cursor:pointer;line-height:1}
+.qbtn:hover{border-color:var(--violet)}
+.empty{color:var(--muted);font-size:.9rem;padding:10px 0}
+.tot{display:flex;justify-content:space-between;font-size:.92rem;padding:3px 0}
+.tot.big{font-family:'Space Grotesk',sans-serif;font-size:1.2rem;font-weight:600;border-top:1px solid var(--border);margin-top:6px;padding-top:10px}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="wrap">
+<a class="back" href="./">&larr; Todas las demos</a>
+
+<div class="eyebrow">Demo · Páginas web y tiendas online</div>
+<h1>Tienda Cumbre</h1>
+<p class="lede">Una tienda de ejemplo con catálogo, búsqueda, carrito, cupón y cálculo de envío. Al final genera el pedido listo para enviar por WhatsApp.</p>
+<p class="disc">Marca y productos ficticios. Prueba el cupón <b>CUMBRE10</b> y llega a $120.000 para obtener envío gratis.</p>
+<div class="grid2">
+  <div>
+    <div class="row" style="margin-bottom:14px">
+      <div class="field" style="flex:1;min-width:180px"><label for="q">Buscar</label><input type="search" id="q" placeholder="Ej: prensa, V60, cápsulas"></div>
+      <div class="field"><label for="sort">Ordenar</label><select id="sort"><option value="rel">Relevancia</option><option value="asc">Precio: menor a mayor</option><option value="desc">Precio: mayor a menor</option></select></div>
+    </div>
+    <div class="row" id="cats" role="group" aria-label="Categorías" style="margin-bottom:16px"></div>
+    <div class="catalog" id="catalog"></div>
+  </div>
+  <div class="panel cart" aria-live="polite">
+    <h2>Tu carrito</h2>
+    <p class="sub" id="ship-msg"></p>
+    <div class="prog"><div id="prog"></div></div>
+    <div id="lines"></div>
+    <div class="row" style="margin:12px 0"><div class="field" style="flex:1"><label for="coupon">Cupón</label><input type="text" id="coupon" placeholder="CUMBRE10" autocomplete="off"></div><button class="btn btn-sm" id="apply" style="align-self:end">Aplicar</button></div>
+    <div id="coupon-msg" class="sub" style="margin:-6px 0 8px"></div>
+    <div class="totals" id="totals"></div>
+    <div class="field" style="margin-top:14px"><label for="nm">Nombre</label><input type="text" id="nm" autocomplete="off" placeholder="Tu nombre"></div>
+    <div class="field" style="margin-top:8px"><label for="city">Ciudad</label><input type="text" id="city" autocomplete="off" placeholder="Bogotá"></div>
+    <button class="btn btn-primary" id="order" style="width:100%;margin-top:14px">Generar pedido por WhatsApp</button>
+    <div id="result" hidden style="margin-top:14px"><pre class="code" id="msg" style="white-space:pre-wrap"></pre><button class="btn btn-sm" id="copy" style="margin-top:8px">Copiar pedido</button></div>
+  </div>
+</div>
+<p class="note">En una tienda real se agrega: pagos en línea, inventario en tiempo real, cuentas de cliente, guías de envío y facturación. Esta demo muestra la experiencia de compra.</p>
+
+</div>
+<script>
+
+(function(){
+var $=function(id){return document.getElementById(id);};
+var cop=function(n){return '$'+Math.round(n).toLocaleString('es-CO');};
+var P=[
+ {id:1,n:'Café molido 250 g',c:'Café',p:18500,e:'☕',d:'Tueste medio, notas a panela y cacao.'},
+ {id:2,n:'Grano entero 500 g',c:'Café',p:36000,e:'🫘',d:'Origen Huila, para moler al momento.'},
+ {id:3,n:'Cápsulas x10',c:'Café',p:31000,e:'⚡',d:'Compatibles con cafeteras comunes.'},
+ {id:4,n:'Prensa francesa',c:'Accesorios',p:85000,e:'🫖',d:'Vidrio borosilicato, 600 ml.'},
+ {id:5,n:'Molinillo manual',c:'Accesorios',p:72000,e:'⚙️',d:'Muelas de cerámica ajustables.'},
+ {id:6,n:'Taza de cerámica',c:'Accesorios',p:24000,e:'🍵',d:'Hecha a mano, 300 ml.'},
+ {id:7,n:'Filtros V60 x100',c:'Accesorios',p:19000,e:'📄',d:'Papel blanqueado sin cloro.'},
+ {id:8,n:'Kit de cata',c:'Kits',p:120000,e:'🎁',d:'Tres orígenes de 100 g con guía de cata.'}
+];
+var cart={}, cat='Todos', coupon=null, FREE=120000, SHIP=9900;
+function renderCats(){
+  var cs=['Todos','Café','Accesorios','Kits'];
+  $('cats').innerHTML='';
+  cs.forEach(function(c){var b=document.createElement('button');b.className='btn btn-sm';b.textContent=c;b.setAttribute('aria-pressed',String(c===cat));b.addEventListener('click',function(){cat=c;renderCats();renderCatalog();});$('cats').appendChild(b);});
+}
+function norm(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');}
+function renderCatalog(){
+  var q=norm($('q').value.trim()), s=$('sort').value;
+  var list=P.filter(function(p){return (cat==='Todos'||p.c===cat)&&(!q||norm(p.n+' '+p.d+' '+p.c).indexOf(q)>=0);});
+  if(s==='asc') list.sort(function(a,b){return a.p-b.p;}); if(s==='desc') list.sort(function(a,b){return b.p-a.p;});
+  $('catalog').innerHTML=list.length?list.map(function(p){return '<article class="prod"><div class="thumb" aria-hidden="true">'+p.e+'</div><h3>'+p.n+'</h3><p>'+p.d+'</p><div class="row" style="justify-content:space-between"><span class="price">'+cop(p.p)+'</span><button class="btn btn-sm btn-primary" data-add="'+p.id+'">Agregar</button></div></article>';}).join(''):'<p class="empty">No encontramos productos con esa búsqueda.</p>';
+}
+function calc(){
+  var sub=0,n=0;Object.keys(cart).forEach(function(id){var p=P.filter(function(x){return x.id==id;})[0];sub+=p.p*cart[id];n+=cart[id];});
+  var disc=coupon?Math.round(sub*coupon):0, after=sub-disc, ship=(after===0||after>=FREE)?0:SHIP;
+  return {sub:sub,n:n,disc:disc,ship:ship,total:after+ship,after:after};
+}
+function renderCart(){
+  var ids=Object.keys(cart), c=calc();
+  $('lines').innerHTML=ids.length?ids.map(function(id){var p=P.filter(function(x){return x.id==id;})[0];
+    return '<div class="line"><div>'+p.n+'</div><div class="price">'+cop(p.p*cart[id])+'</div><div class="qty"><button class="qbtn" data-dec="'+id+'" aria-label="Quitar una unidad de '+p.n+'">−</button><span>'+cart[id]+'</span><button class="qbtn" data-inc="'+id+'" aria-label="Agregar una unidad de '+p.n+'">+</button></div><div></div></div>';}).join(''):'<p class="empty">Tu carrito está vacío. Agrega un producto del catálogo.</p>';
+  var left=Math.max(0,FREE-c.after);
+  $('ship-msg').textContent=c.after===0?'Envío gratis desde '+cop(FREE)+'.':(left>0?'Te faltan '+cop(left)+' para envío gratis.':'Tienes envío gratis.');
+  $('prog').style.width=Math.min(100,c.after/FREE*100)+'%';
+  $('totals').innerHTML='<div class="tot"><span>Subtotal</span><span class="price">'+cop(c.sub)+'</span></div>'+(c.disc?'<div class="tot"><span>Cupón</span><span class="price">−'+cop(c.disc)+'</span></div>':'')+'<div class="tot"><span>Envío</span><span class="price">'+(c.ship?cop(c.ship):'Gratis')+'</span></div><div class="tot big"><span>Total</span><span>'+cop(c.total)+'</span></div>';
+  $('order').disabled=!c.n;
+}
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-add],[data-inc],[data-dec]'); if(!t) return;
+  var id=t.dataset.add||t.dataset.inc||t.dataset.dec;
+  if(t.dataset.dec){cart[id]=(cart[id]||0)-1; if(cart[id]<=0) delete cart[id];} else cart[id]=(cart[id]||0)+1;
+  $('result').hidden=true; renderCart();
+});
+$('q').addEventListener('input',renderCatalog); $('sort').addEventListener('change',renderCatalog);
+$('apply').addEventListener('click',function(){
+  var v=$('coupon').value.trim().toUpperCase();
+  if(v==='CUMBRE10'){coupon=.10;$('coupon-msg').textContent='Cupón aplicado: 10 % de descuento.';}
+  else{coupon=null;$('coupon-msg').textContent=v?'Ese cupón no existe.':'Escribe un cupón.';}
+  renderCart();
+});
+$('order').addEventListener('click',function(){
+  var c=calc(), nm=$('nm').value.trim()||'(sin nombre)', city=$('city').value.trim()||'(sin ciudad)';
+  var L=['Hola, quiero hacer este pedido:',''];
+  Object.keys(cart).forEach(function(id){var p=P.filter(function(x){return x.id==id;})[0];L.push('• '+cart[id]+' x '+p.n+' — '+cop(p.p*cart[id]));});
+  L.push('');L.push('Subtotal: '+cop(c.sub));if(c.disc)L.push('Descuento: −'+cop(c.disc));L.push('Envío: '+(c.ship?cop(c.ship):'Gratis'));L.push('TOTAL: '+cop(c.total));L.push('');L.push('Nombre: '+nm);L.push('Ciudad: '+city);
+  $('msg').textContent=L.join('\n'); $('result').hidden=false;
+});
+$('copy').addEventListener('click',function(){
+  var b=$('copy'),t=$('msg').textContent;
+  var ok=function(){b.textContent='Copiado';setTimeout(function(){b.textContent='Copiar pedido';},1500);};
+  var fb=function(){var r=document.createRange();r.selectNodeContents($('msg'));var s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selecciona y copia (Ctrl+C)';};
+  try{navigator.clipboard.writeText(t).then(ok,fb);}catch(e){fb();}
+});
+renderCats(); renderCatalog();
+cart[1]=2; cart[4]=1; renderCart();
+})();
+
+</script>
+</body>
+</html>
