@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Chatbot para negocios | Quanta Solutions</title>
+<meta name="description" content="Demo de un chatbot que responde preguntas frecuentes y agenda citas, con el panel de agenda que ve el negocio.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{--bg:#0A0118;--surface:#160A31;--surface-2:#1D0F3E;--violet:#8B5CF6;--magenta:#EC4899;--cyan:#22D3EE;--amber:#FBBF24;--text:#F5F3FF;--muted:#A79BC7;--border:rgba(139,92,246,0.18);--grad:linear-gradient(115deg,var(--violet) 0%,var(--magenta) 55%,var(--cyan) 100%);--good:#34D399;--bad:#FB7185;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;line-height:1.6;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-bottom:64px;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Space Grotesk',system-ui,sans-serif;font-weight:600;letter-spacing:-0.02em;text-wrap:balance}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+.glow{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(600px 400px at 15% 10%,rgba(139,92,246,0.20),transparent 60%),radial-gradient(700px 500px at 85% 30%,rgba(236,72,153,0.12),transparent 60%),radial-gradient(600px 400px at 50% 95%,rgba(34,211,238,0.08),transparent 60%)}
+.wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:36px 0 0}
+.back{display:inline-block;color:var(--muted);font-size:.92rem;margin-bottom:20px}
+.back:hover{color:var(--text)}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px}
+h1{font-size:clamp(1.9rem,4vw,2.6rem);line-height:1.1;margin-bottom:12px}
+.lede{color:var(--muted);max-width:64ch;margin-bottom:12px}
+.disc{font-size:.85rem;color:var(--muted);border-left:3px solid var(--violet);padding:2px 0 2px 12px;max-width:72ch;margin-bottom:26px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;min-width:0}
+.panel h2{font-size:1.1rem;margin-bottom:4px}
+.sub{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--text);font-weight:600;font-size:.92rem;cursor:pointer;transition:transform .15s ease,border-color .15s ease}
+.btn:hover{border-color:var(--violet);transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.btn-primary{background:var(--grad);color:#0A0118;border-color:transparent;box-shadow:0 8px 26px rgba(139,92,246,0.3)}
+.btn-primary:hover{border-color:transparent}
+.btn[aria-pressed="true"]{background:var(--violet);border-color:var(--violet)}
+.btn-sm{padding:6px 12px;font-size:.82rem}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.field{display:grid;gap:4px;min-width:0;max-width:100%}
+.field input[type=file]{max-width:100%;min-width:0}
+.field label,.lbl{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+input[type=text],input[type=search],input[type=number],select,textarea{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;min-width:0;max-width:100%}
+select option{background:var(--surface)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.grid-eq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:860px){.grid2,.grid-eq{grid-template-columns:minmax(0,1fr)}}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{font-family:'JetBrains Mono',monospace;font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;font-weight:500;padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace}
+tr:last-child td{border-bottom:0}
+pre.code{margin:0;background:#07000F;color:#D9D2F5;border:1px solid var(--border);border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.6;padding:14px;overflow:auto;max-height:340px;white-space:pre}
+.pill{font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:3px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.good{color:var(--good)}.pill.bad{color:var(--bad)}.pill.warn{color:var(--amber)}.pill.info{color:var(--cyan)}
+.note{font-size:.82rem;color:var(--muted);margin-top:28px;padding-top:14px;border-top:1px solid var(--border);max-width:76ch}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.phone{background:var(--surface);border:1px solid var(--border);border-radius:22px;overflow:hidden;display:grid;grid-template-rows:auto 1fr auto auto;height:600px;min-width:0}
+.ph-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+.av{width:38px;height:38px;border-radius:50%;background:var(--grad);color:#0A0118;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Space Grotesk',sans-serif}
+.on{font-size:.74rem;color:var(--good)}
+.chat{padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:84%;padding:9px 13px;border-radius:14px;font-size:.92rem;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.bot{background:var(--surface-2);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px}
+.msg.me{background:var(--violet);align-self:flex-end;border-bottom-right-radius:4px}
+.quick{display:flex;flex-wrap:wrap;gap:8px;padding:8px 14px;border-top:1px solid var(--border);min-height:50px}
+.compose{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border)}
+.compose input{flex:1}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+.stat .v{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:600}
+.stat .k{font-size:.74rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="wrap">
+<a class="back" href="./">&larr; Todas las demos</a>
+
+<div class="eyebrow">Demo · Chatbots para negocios</div>
+<h1>Chatbot de citas para un consultorio</h1>
+<p class="lede">Conversa con el asistente de un consultorio odontológico ficticio. Responde preguntas frecuentes, agenda citas y pasa a una persona cuando hace falta. A la derecha ves la agenda que recibe el negocio.</p>
+<p class="disc">Esta demo funciona con reglas y botones, sin IA generativa, y vive en tu navegador. La versión real se conecta a WhatsApp, a la agenda del negocio y, si conviene, a un modelo de lenguaje.</p>
+<div class="grid-eq">
+  <div class="phone" aria-label="Conversación con el chatbot">
+    <div class="ph-head"><span class="av">S</span><div><b>Odontología Sonrisa</b><div class="on">asistente virtual · en línea</div></div></div>
+    <div class="chat" id="chat" aria-live="polite"></div>
+    <div class="quick" id="quick"></div>
+    <form class="compose" id="form"><input type="text" id="txt" placeholder="Escribe tu mensaje…" autocomplete="off" aria-label="Mensaje"><button class="btn btn-primary btn-sm" type="submit">Enviar</button></form>
+  </div>
+  <div style="display:grid;gap:16px">
+    <div class="panel"><h2>Agenda del negocio</h2><p class="sub">Las citas aparecen aquí cuando el cliente las confirma.</p><div class="tablewrap"><table><thead><tr><th>Día</th><th>Hora</th><th>Cliente</th><th>Servicio</th></tr></thead><tbody id="agenda"></tbody></table></div></div>
+    <div class="panel"><h2>Lo que mide el negocio</h2><div class="stats" id="stats"></div></div>
+  </div>
+</div>
+<p class="note">Los horarios, precios y la dirección son ejemplos inventados. En un proyecto real se cargan los del negocio y se prueba el asistente con las preguntas reales de sus clientes.</p>
+
+</div>
+<script>
+
+(function(){
+var $=function(id){return document.getElementById(id);};
+function norm(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9ñ ]/g,' ');}
+var SERV=[['Limpieza dental','$90.000'],['Blanqueamiento','$350.000'],['Valoración de ortodoncia','Gratis'],['Urgencia (dolor)','Desde $60.000']];
+var HORAS=['9:00','10:30','14:00','15:30','17:00'];
+var state={mode:'menu',serv:null,dia:null,hora:null},citas=[],stat={msgs:0,res:0,ag:0,hum:0};
+var DIAS=['dom','lun','mar','mié','jue','vie','sáb'];
+function proximosDias(){var d=new Date(),out=[];d.setHours(12,0,0,0);while(out.length<5){d.setDate(d.getDate()+1);if(d.getDay()!==0)out.push({lbl:DIAS[d.getDay()]+' '+d.getDate(),k:d.toISOString().slice(0,10)});}return out;}
+function ocupado(dia,hora){var s=0,t=dia+hora;for(var i=0;i<t.length;i++)s=(s*31+t.charCodeAt(i))>>>0;return s%5===0||citas.some(function(c){return c.k===dia&&c.hora===hora;});}
+function say(t,who){var m=document.createElement('div');m.className='msg '+who;m.textContent=t;$('chat').appendChild(m);$('chat').scrollTop=$('chat').scrollHeight;if(who==='me')stat.msgs++;}
+function quick(opts){var q=$('quick');q.innerHTML='';opts.forEach(function(o){var b=document.createElement('button');b.className='btn btn-sm';b.textContent=o[0];b.type='button';b.addEventListener('click',function(){user(o[1]||o[0]);});q.appendChild(b);});}
+function menu(){state.mode='menu';quick([['Horarios'],['Precios'],['Ubicación'],['Agendar cita'],['Hablar con una persona']]);}
+function bot(t,delay){setTimeout(function(){say(t,'bot');},delay||350);}
+function renderAgenda(){
+  $('agenda').innerHTML=citas.length?citas.map(function(c){return '<tr><td>'+c.lbl+'</td><td class="num">'+c.hora+'</td><td>'+c.nom+'</td><td>'+c.serv+'</td></tr>';}).join(''):'<tr><td colspan="4" style="color:var(--muted)">Aún no hay citas. Agenda una desde el chat.</td></tr>';
+  $('stats').innerHTML='<div class="stat"><div class="v">'+stat.msgs+'</div><div class="k">Mensajes recibidos</div></div><div class="stat"><div class="v">'+stat.ag+'</div><div class="k">Citas agendadas</div></div><div class="stat"><div class="v">'+stat.hum+'</div><div class="k">Pasadas a una persona</div></div>';
+}
+function intent(t){
+  var n=norm(t);
+  if(/hola|buenas|buenos dias|buen dia|buenas tardes/.test(n)&&n.split(' ').length<4)return 'saludo';
+  if(/cita|agendar|reservar|turno|agenda/.test(n))return 'agendar';
+  if(/horario|hora |abren|cierran|atienden|abierto/.test(n))return 'horarios';
+  if(/precio|cuesta|valor|costo|tarifa|cuanto/.test(n))return 'precios';
+  if(/donde|direccion|ubicacion|queda|llegar/.test(n))return 'ubicacion';
+  if(/persona|humano|asesor|llamar|hablar con/.test(n))return 'humano';
+  if(/gracias|listo|perfecto|ok$/.test(n))return 'gracias';
+  return null;
+}
+function reply(i){
+  if(i==='saludo'){bot('¡Hola! Soy el asistente de Odontología Sonrisa. ¿En qué te ayudo?');menu();}
+  else if(i==='horarios'){stat.res++;bot('Atendemos de lunes a viernes de 8:00 a 18:00 y los sábados de 8:00 a 13:00. Los domingos no abrimos.');menu();}
+  else if(i==='precios'){stat.res++;bot('Precios de referencia:\n'+SERV.map(function(s){return '• '+s[0]+': '+s[1];}).join('\n')+'\n\nEl valor final lo confirma el odontólogo en la valoración.');menu();}
+  else if(i==='ubicacion'){stat.res++;bot('Estamos en el consultorio 402 del Edificio Sol, Bogotá (dirección de ejemplo). Hay parqueadero y estación de transporte a dos cuadras.');menu();}
+  else if(i==='humano'){stat.hum++;bot('Claro. Una persona del equipo te escribirá en horario de atención. ¿Me dejas tu nombre y tu número?');state.mode='humano';quick([]);}
+  else if(i==='gracias'){bot('¡Con gusto! Si necesitas algo más, aquí estoy.');menu();}
+  else if(i==='agendar'){state.mode='serv';bot('Perfecto, vamos a agendar. ¿Qué servicio necesitas?');quick(SERV.map(function(s){return [s[0]];}));}
+  else{bot('No estoy seguro de haber entendido. Puedo ayudarte con horarios, precios, ubicación y citas. ¿Prefieres que te pase con una persona?');quick([['Horarios'],['Precios'],['Agendar cita'],['Hablar con una persona']]);}
+}
+function user(t){
+  t=t.trim();if(!t)return;say(t,'me');renderAgenda();
+  if(state.mode==='serv'){
+    var s=SERV.filter(function(x){return norm(x[0]).indexOf(norm(t).trim())>=0||norm(t).indexOf(norm(x[0]))>=0;})[0];
+    if(!s){bot('Elige uno de los servicios de la lista, por favor.');return;}
+    state.serv=s[0];state.mode='dia';bot('¿Qué día te queda bien?');quick(proximosDias().map(function(d){return [d.lbl,d.k];}));return;
+  }
+  if(state.mode==='dia'){
+    var ds=proximosDias(),d=ds.filter(function(x){return x.k===t||x.lbl===t;})[0];
+    if(!d){bot('Elige uno de los días que te muestro.');return;}
+    state.dia=d;state.mode='hora';var libres=HORAS.filter(function(h){return !ocupado(d.k,h);});
+    if(!libres.length){bot('Ese día ya está lleno. Elige otro, por favor.');state.mode='dia';return;}
+    bot('Estas horas están libres el '+d.lbl+':');quick(libres.map(function(h){return [h];}));return;
+  }
+  if(state.mode==='hora'){
+    var h=HORAS.filter(function(x){return x===t.trim();})[0];
+    if(!h){bot('Elige una de las horas libres.');return;}
+    state.hora=h;state.mode='nombre';bot('Listo, '+state.dia.lbl+' a las '+h+'. ¿A nombre de quién agendo la cita?');quick([]);return;
+  }
+  if(state.mode==='nombre'){
+    var nom=t.replace(/[^\wáéíóúñÁÉÍÓÚÑ ]/g,'').trim().slice(0,40)||'Cliente';
+    citas.push({k:state.dia.k,lbl:state.dia.lbl,hora:state.hora,nom:nom,serv:state.serv});stat.ag++;
+    bot('Cita confirmada, '+nom+':\n'+state.serv+' · '+state.dia.lbl+' a las '+state.hora+'.\nTe enviaremos un recordatorio el día anterior.');
+    state.mode='menu';menu();renderAgenda();return;
+  }
+  if(state.mode==='humano'){bot('Gracias, ya pasé tu mensaje al equipo. Te contactarán pronto.');state.mode='menu';menu();renderAgenda();return;}
+  reply(intent(t));renderAgenda();
+}
+$('form').addEventListener('submit',function(e){e.preventDefault();var v=$('txt').value;$('txt').value='';user(v);});
+say('¡Hola! Soy el asistente de Odontología Sonrisa. Puedo darte horarios y precios, decirte dónde estamos y agendar tu cita.','bot');
+menu();renderAgenda();
+})();
+
+</script>
+</body>
+</html>

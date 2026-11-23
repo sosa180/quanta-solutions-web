@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Integración de sistemas | Quanta Solutions</title>
+<meta name="description" content="Demo de integración: tres fuentes con formatos distintos se unifican en una sola tabla, con informe de calidad.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{--bg:#0A0118;--surface:#160A31;--surface-2:#1D0F3E;--violet:#8B5CF6;--magenta:#EC4899;--cyan:#22D3EE;--amber:#FBBF24;--text:#F5F3FF;--muted:#A79BC7;--border:rgba(139,92,246,0.18);--grad:linear-gradient(115deg,var(--violet) 0%,var(--magenta) 55%,var(--cyan) 100%);--good:#34D399;--bad:#FB7185;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;line-height:1.6;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-bottom:64px;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Space Grotesk',system-ui,sans-serif;font-weight:600;letter-spacing:-0.02em;text-wrap:balance}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+.glow{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(600px 400px at 15% 10%,rgba(139,92,246,0.20),transparent 60%),radial-gradient(700px 500px at 85% 30%,rgba(236,72,153,0.12),transparent 60%),radial-gradient(600px 400px at 50% 95%,rgba(34,211,238,0.08),transparent 60%)}
+.wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:36px 0 0}
+.back{display:inline-block;color:var(--muted);font-size:.92rem;margin-bottom:20px}
+.back:hover{color:var(--text)}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px}
+h1{font-size:clamp(1.9rem,4vw,2.6rem);line-height:1.1;margin-bottom:12px}
+.lede{color:var(--muted);max-width:64ch;margin-bottom:12px}
+.disc{font-size:.85rem;color:var(--muted);border-left:3px solid var(--violet);padding:2px 0 2px 12px;max-width:72ch;margin-bottom:26px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;min-width:0}
+.panel h2{font-size:1.1rem;margin-bottom:4px}
+.sub{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--text);font-weight:600;font-size:.92rem;cursor:pointer;transition:transform .15s ease,border-color .15s ease}
+.btn:hover{border-color:var(--violet);transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.btn-primary{background:var(--grad);color:#0A0118;border-color:transparent;box-shadow:0 8px 26px rgba(139,92,246,0.3)}
+.btn-primary:hover{border-color:transparent}
+.btn[aria-pressed="true"]{background:var(--violet);border-color:var(--violet)}
+.btn-sm{padding:6px 12px;font-size:.82rem}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.field{display:grid;gap:4px;min-width:0;max-width:100%}
+.field input[type=file]{max-width:100%;min-width:0}
+.field label,.lbl{font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+input[type=text],input[type=search],input[type=number],select,textarea{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;min-width:0;max-width:100%}
+select option{background:var(--surface)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.grid-eq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:860px){.grid2,.grid-eq{grid-template-columns:minmax(0,1fr)}}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{font-family:'JetBrains Mono',monospace;font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;font-weight:500;padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace}
+tr:last-child td{border-bottom:0}
+pre.code{margin:0;background:#07000F;color:#D9D2F5;border:1px solid var(--border);border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.6;padding:14px;overflow:auto;max-height:340px;white-space:pre}
+.pill{font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:3px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.pill.good{color:var(--good)}.pill.bad{color:var(--bad)}.pill.warn{color:var(--amber)}.pill.info{color:var(--cyan)}
+.note{font-size:.82rem;color:var(--muted);margin-top:28px;padding-top:14px;border-top:1px solid var(--border);max-width:76ch}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.src{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;min-width:0}
+.src h3{font-size:1rem;margin-bottom:2px}.src .sub{margin-bottom:10px}
+.src .tablewrap td,.src .tablewrap th{padding:5px 8px;font-size:.8rem}
+.steps{padding-left:20px;display:grid;gap:6px;font-size:.92rem}
+.steps li{opacity:0;transition:opacity .3s}.steps li.on{opacity:1}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+.stat .v{font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:600}.stat .k{font-size:.76rem;color:var(--muted)}
+.issue{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);font-size:.86rem}
+.issue:last-child{border-bottom:0}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="wrap">
+<a class="back" href="./">&larr; Todas las demos</a>
+
+<div class="eyebrow">Demo · Integraciones a la medida</div>
+<h1>Tres sistemas, una sola verdad</h1>
+<p class="lede">Una empresa ficticia registra sus ventas en un ERP, un CRM y un Excel manual. Cada uno usa fechas, nombres y valores en formato distinto, y hay registros repetidos. Pulsa Integrar y mira cómo quedan unificados.</p>
+<p class="disc">La lógica de limpieza que ves se ejecuta de verdad en tu navegador sobre estos datos de ejemplo. En un proyecto real, las fuentes se conectan a sus bases (Oracle, MySQL, tiqueteras, APIs) y el proceso corre solo y se programa.</p>
+<div class="row" style="margin-bottom:14px"><button class="btn btn-primary" id="go">Integrar las tres fuentes</button><button class="btn" id="reset">Volver al inicio</button></div>
+<div class="grid-eq" id="srcs"></div>
+<div id="after" hidden>
+  <div class="panel" style="margin-top:16px"><h2>Pasos ejecutados</h2><ol class="steps" id="steps"></ol></div>
+  <div class="panel" style="margin-top:16px"><h2>Informe de calidad</h2><div class="stats" id="stats"></div><div id="issues" style="margin-top:12px"></div></div>
+  <div class="panel" style="margin-top:16px"><h2>Tabla unificada</h2><p class="sub">Un solo formato: fecha ISO, cliente normalizado y valor en pesos.</p><div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Cliente</th><th class="num">Valor (COP)</th><th>Fuente</th></tr></thead><tbody id="uni"></tbody></table></div></div>
+</div>
+<p class="note">Este es el trabajo que hoy se hace a mano cada mes en muchas empresas. Una vez automatizado, los reportes y tableros se alimentan de la tabla unificada.</p>
+
+</div>
+<script>
+
+(function(){
+var $=function(id){return document.getElementById(id);};
+var nf=function(n){return Number(n).toLocaleString('es-CO');};
+var ERP={nombre:'ERP (CSV)',cols:['fecha','cliente','valor'],rows:[
+ ['03/11/2026','Distribuidora El Roble S.A.S.','1.250.000,00'],['04/11/2026','Panadería La Espiga','380.500,00'],['05/11/2026','Ferretería Central','2.100.000,00'],['05/11/2026','Distribuidora El Roble S.A.S.','640.000,00'],['09/11/2026','Panadería La Espiga','410.000,00'],['12/11/2026','Café Aurora','95.000,00']]};
+var CRM={nombre:'CRM (exportación)',cols:['date','customer_name','amount'],rows:[
+ ['2026-11-04','PANADERIA LA ESPIGA','380500'],['2026-11-06','Cafe Aurora','152000'],['2026-11-09','Ferreteria Central ','1875000'],['2026-11-10','distribuidora el roble sas','910000'],['2026-11-12','Café Aurora','95000'],['2026-11-14','Hotel Los Pinos','sin dato']]};
+var XLS={nombre:'Excel manual',cols:['Fecha','Cliente','Valor $'],rows:[
+ ['nov 5','Ferretería Central','$2.100.000'],['nov 11','Hotel Los Pinos','$3.400.000'],['11/13/26','Panadería la Espiga','$295.000'],['nov 16','Cafe Aurora','$ 118.000'],['nov 16','Cafe Aurora','$ 118.000'],['nov 18','Ferretería Central','$720.000']]};
+var SRC=[ERP,CRM,XLS];
+var ALIAS={'distribuidora el roble s a s':'Distribuidora El Roble','distribuidora el roble sas':'Distribuidora El Roble','panaderia la espiga':'Panadería La Espiga','ferreteria central':'Ferretería Central','cafe aurora':'Café Aurora','hotel los pinos':'Hotel Los Pinos'};
+function key(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
+var MES={ene:1,feb:2,mar:3,abr:4,may:5,jun:6,jul:7,ago:8,sep:9,oct:10,nov:11,dic:12};
+function pad(n){return (n<10?'0':'')+n;}
+function parseDate(s,fuente){
+  s=s.trim();var m;
+  if((m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/)))return {v:m[0]};
+  if((m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)))return {v:m[3]+'-'+pad(+m[2])+'-'+pad(+m[1])};
+  if((m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/))){var a=+m[1],b=+m[2];if(a>12)return {v:'20'+m[3]+'-'+pad(b)+'-'+pad(a)};return {v:'20'+m[3]+'-'+pad(a)+'-'+pad(b),amb:true};}
+  if((m=s.match(/^([a-z]{3}) (\d{1,2})$/i))&&MES[m[1].toLowerCase()])return {v:'2026-'+pad(MES[m[1].toLowerCase()])+'-'+pad(+m[2]),infer:true};
+  return null;
+}
+function parseVal(s){
+  var t=String(s).replace(/[$\s]/g,'');if(!/\d/.test(t))return null;
+  if(/,\d{1,2}$/.test(t))t=t.replace(/\./g,'').replace(',','.');else t=t.replace(/\./g,'').replace(/,/g,'');
+  var n=parseFloat(t);return isNaN(n)?null:n;
+}
+function renderSources(){
+  $('srcs').innerHTML=SRC.map(function(s,i){return '<div class="src"><h3>'+s.nombre+'</h3><p class="sub">'+s.rows.length+' filas, tal como llegan</p><div class="tablewrap"><table><thead><tr>'+s.cols.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr></thead><tbody>'+s.rows.map(function(r){return '<tr>'+r.map(function(c){return '<td>'+c+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div></div>';}).join('');
+}
+function run(){
+  var out=[],issues=[],read=0,fechasFix=0,nombresFix=0,dups=0,drop=0,ambig=0;
+  SRC.forEach(function(s){
+    s.rows.forEach(function(r,ri){
+      read++;
+      var d=parseDate(r[0],s.nombre),v=parseVal(r[2]);
+      if(!d){drop++;issues.push(['bad',s.nombre+', fila '+(ri+1)+': fecha no reconocida ("'+r[0]+'"). Descartada.']);return;}
+      if(v===null){drop++;issues.push(['bad',s.nombre+', fila '+(ri+1)+': valor no numérico ("'+r[2]+'") de '+r[1].trim()+'. Se descartó y queda para revisión.']);return;}
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(r[0].trim()))fechasFix++;
+      if(d.infer){s.inf=(s.inf||0)+1;}
+      if(d.amb){ambig++;issues.push(['warn',s.nombre+', fila '+(ri+1)+': la fecha "'+r[0]+'" podría ser mes/día o día/mes; se interpretó como mes/día/año porque el segundo número (13) no puede ser un mes.']);}
+      var k=key(r[1]),nom=ALIAS[k]||r[1].trim();if(nom!==r[1])nombresFix++;
+      out.push({f:d.v,c:nom,v:v,s:s.nombre});
+    });
+  });
+  SRC.forEach(function(s){if(s.inf)issues.push(['warn',s.nombre+': '+s.inf+' fechas no traen año (ej. "nov 5"); se asumió 2026.']);s.inf=0;});
+  var seen={},uni=[];
+  out.sort(function(a,b){return a.f<b.f?-1:a.f>b.f?1:a.c<b.c?-1:1;}).forEach(function(r){
+    var k=r.f+'|'+r.c+'|'+r.v;
+    if(seen[k]){dups++;issues.push(['info','Duplicado: '+r.c+', '+r.f+', $'+nf(r.v)+(seen[k]===r.s?' está repetido dentro de '+r.s:' aparece en '+seen[k]+' y en '+r.s)+'. Se asumió que es la misma venta y se conservó una.']);return;}
+    seen[k]=r.s;uni.push(r);
+  });
+  return {uni:uni,issues:issues,read:read,fechasFix:fechasFix,nombresFix:nombresFix,dups:dups,drop:drop,ambig:ambig};
+}
+var STEPS=['Leer las tres fuentes y reconocer sus columnas','Convertir todas las fechas al formato AAAA-MM-DD','Convertir los valores a números (quitar $, puntos y comas)','Unificar los nombres de cliente (tildes, mayúsculas, razón social)','Buscar registros duplicados entre fuentes (misma fecha, cliente y valor)','Cargar la tabla unificada y generar el informe'];
+function show(){
+  var R=run();$('after').hidden=false;
+  $('steps').innerHTML=STEPS.map(function(s){return '<li>'+s+'</li>';}).join('');
+  var lis=document.querySelectorAll('#steps li'),i=0,fast=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  (function nxt(){if(i<lis.length){lis[i].classList.add('on');i++;fast?nxt():setTimeout(nxt,380);}})();
+  $('stats').innerHTML=[[R.read,'Filas leídas'],[R.uni.length,'Filas en la tabla unificada'],[R.fechasFix,'Fechas convertidas'],[R.nombresFix,'Nombres corregidos'],[R.dups,'Duplicados quitados'],[R.drop,'Filas para revisar a mano']].map(function(x){return '<div class="stat"><div class="v">'+x[0]+'</div><div class="k">'+x[1]+'</div></div>';}).join('');
+  var cls={bad:'bad',warn:'warn',info:'info'},tx={bad:'Revisar',warn:'Atención',info:'Aviso'};
+  $('issues').innerHTML=R.issues.length?R.issues.map(function(x){return '<div class="issue"><span class="pill '+cls[x[0]]+'">'+tx[x[0]]+'</span><span>'+x[1]+'</span></div>';}).join(''):'<p class="sub">Sin hallazgos.</p>';
+  $('uni').innerHTML=R.uni.map(function(r){return '<tr><td>'+r.f+'</td><td>'+r.c+'</td><td class="num">$'+nf(r.v)+'</td><td>'+r.s+'</td></tr>';}).join('');
+  $('after').scrollIntoView({behavior:fast?'auto':'smooth',block:'start'});
+}
+$('go').addEventListener('click',show);
+$('reset').addEventListener('click',function(){$('after').hidden=true;window.scrollTo({top:0});});
+renderSources();
+})();
+
+</script>
+</body>
+</html>
